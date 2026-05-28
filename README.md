@@ -1,1 +1,128 @@
-# hardened-pi-agent-for-enterprise
+# Hardened Pi Agent Harness For Enterprise
+
+Hardened Docker wrapper for `pi` suitable for zero-trust enterprise environments. `secure-pi` launches `pi` in a locked-down container with secure defaults, minimizing attack surface while maintaining core functionality for codebase and LLM interactions.
+
+## What this setup enforces
+
+- **Repo scoping**: only one host repository is mounted to `/workspace`
+- **Read-only container root filesystem**: blocks writes outside mounted tmpfs + repo
+- **Non-root runtime user**: runs as UID `10001` user `pi`
+- **Dropped Linux capabilities**: `--cap-drop ALL`
+- **No privilege escalation**: `no-new-privileges:true`
+- **Constrained resources**: CPU, memory, PID limits
+- **Telemetry and update checks disabled**:
+  - `enableInstallTelemetry: false` (settings)
+  - `PI_TELEMETRY=0`
+  - `PI_SKIP_VERSION_CHECK=1`
+  - `PI_OFFLINE=1` (disables startup network checks)
+- **Untrusted dynamic resources disabled by default**:
+  - `--no-extensions --no-themes`
+
+> **Intentional UX/Security tradeoffs:**
+>
+> - `Auth` is persisted by default so developers only need to run `/login` once. Only the auth token file is persisted; the rest of `~/.pi` stays ephemeral via `tmpfs` (temporary in-memory file-system).
+> - `Skills` and `prompt templates` are intentionally enabled for developer experience.
+
+## Files
+
+- `Dockerfile` - hardened `pi` image
+- `docker/entrypoint.sh` - secure defaults + startup config bootstrap
+- `config/settings.json` - telemetry-off base settings
+- `run-secure-pi.sh` - all-in-one Linux/macOS wrapper (auto-build + run)
+- `run-secure-pi.cmd` - all-in-one Windows CMD wrapper (auto-build + run)
+- `docker-compose.yml` - compose alternative
+
+## Build (optional)
+
+The run scripts auto-build the image if it does not exist.
+
+Manual build:
+
+```bash
+docker build -t secure-pi:latest .
+```
+
+Pin a specific Pi version:
+
+```bash
+docker build --build-arg PI_VERSION=0.42.0 -t secure-pi:0.42.0 .
+```
+
+## Run (recommended all-in-one)
+
+### Linux / macOS
+
+From the repo you want Pi to access:
+
+```bash
+./run-secure-pi.sh .
+```
+
+Or pass a path explicitly:
+
+```bash
+./run-secure-pi.sh /absolute/path/to/repo
+```
+
+Pass normal Pi arguments after the repo path:
+
+```bash
+./run-secure-pi.sh /<path-to-repo>/-p "summarize this codebase"
+./run-secure-pi.sh /<path-to-repo>/"find dead code"
+```
+
+### Windows (CMD)
+
+```cmd
+run-secure-pi.cmd C:\workspace\<namespace>\<repo-location>
+run-secure-pi.cmd C:\workspace\<namespace>\<repo-location> -p "summarize this codebase"
+```
+
+## Security toggles
+
+- Disable context-file loading (`AGENTS.md`/`CLAUDE.md`):
+
+```bash
+PI_ALLOW_CONTEXT_FILES=0 ./run-secure-pi.sh /<path-to-repo>/
+```
+
+- Disable `bash` tool from the LLM toolset:
+
+```bash
+PI_DISABLE_BASH_TOOL=1 ./run-secure-pi.sh /<path-to-repo>/
+```
+
+- Fully cut network (no model calls either):
+
+```bash
+PI_DOCKER_NETWORK_NONE=1 ./run-secure-pi.sh /<path-to-repo>/
+```
+
+## Compose usage
+
+Create persistent auth file once:
+
+```bash
+mkdir -p .secure-pi
+printf '{}\n' > .secure-pi/auth.json
+```
+
+Then run:
+
+```bash
+export REPO_PATH=/absolute/path/to/repo
+docker compose run --rm pi
+```
+
+With prompt:
+
+```bash
+docker compose run --rm pi -p "review this repository"
+```
+
+## Notes for enterprise security review
+
+1. This setup blocks Pi's own telemetry/update endpoints via config/env (`PI_OFFLINE`, `PI_SKIP_VERSION_CHECK`, `PI_TELEMETRY=0`).
+2. Model-provider traffic (for example GitHub Copilot or internal gateways) is still allowed unless you set `--network none`.
+3. For strict egress control, combine this with your enterprise proxy/firewall egress allowlist.
+4. Credentials are intentionally persisted in a host auth file for usability (one-time `/login`), while keeping them out of images.

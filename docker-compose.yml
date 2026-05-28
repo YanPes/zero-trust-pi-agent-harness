@@ -1,0 +1,28 @@
+services:
+  pi:
+    build:
+      context: .
+    image: secure-pi:latest
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m
+      - /home/pi/.pi:rw,nosuid,size=256m
+    pids_limit: 512
+    mem_limit: 4g
+    cpus: 2.0
+    environment:
+      PI_OFFLINE: "1"
+      PI_SKIP_VERSION_CHECK: "1"
+      PI_TELEMETRY: "0"
+      PI_ALLOW_CONTEXT_FILES: "1"
+      PI_DISABLE_BASH_TOOL: "0"
+    volumes:
+      - ${REPO_PATH:?Set REPO_PATH to an absolute repository path}:/workspace:rw
+      - ${PI_AUTH_FILE:-./.secure-pi/auth.json}:/home/pi/.pi/agent/auth.json:rw
