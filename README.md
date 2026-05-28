@@ -1,6 +1,6 @@
 # Hardened Pi Agent Harness For Enterprise
 
-Hardened Docker wrapper for `pi` suitable for zero-trust enterprise environments. `secure-pi` launches `pi` in a locked-down container with secure defaults, minimizing attack surface while maintaining core functionality for codebase and LLM interactions.
+Hardened Docker wrapper for `pi` (https://pi.dev/) suitable for zero-trust enterprise environments. `secure-pi` launches `pi` in a locked-down container with secure defaults, minimizing attack surface while maintaining core functionality for codebase and LLM interactions.
 
 ## What this setup enforces
 
