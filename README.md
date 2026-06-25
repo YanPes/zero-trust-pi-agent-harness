@@ -32,6 +32,54 @@ Hardened Docker wrapper for `pi` (https://pi.dev/) suitable for zero-trust enter
 - `run-secure-pi.cmd` - all-in-one Windows CMD wrapper (auto-build + run)
 - `docker-compose.yml` - compose alternative
 
+## Getting started
+
+### Linux / macOS first-time setup
+
+Before first run, make the wrapper executable:
+
+```bash
+chmod +x run-secure-pi.sh
+```
+
+What this does:
+
+- Adds execute permission to `run-secure-pi.sh` so `./run-secure-pi.sh` works.
+
+If you cloned files with Windows-style line endings, convert shell scripts to Unix line endings:
+
+```bash
+perl -pi -e 's/\r$//' run-secure-pi.sh docker/entrypoint.sh
+```
+
+What this does:
+
+- Removes trailing `\r` characters from each line.
+- Fixes errors like `/usr/bin/env: ‘bash\r’: No such file or directory`.
+- Ensures shell shebangs work on Linux/macOS.
+
+Then run Pi against repo:
+
+```bash
+./run-secure-pi.sh /absolute/path/to/repo
+```
+
+Optional: add a short shell alias in `~/.bashrc`:
+
+```bash
+alias secpi='/absolute/path/to/hardened-pi-agent-harness-for-enterprise/run-secure-pi.sh'
+```
+
+What this does:
+
+- Lets you run `secpi /absolute/path/to/repo` instead of typing full script path.
+
+Apply it:
+
+```bash
+source ~/.bashrc
+```
+
 ## Build (optional)
 
 The run scripts auto-build the image if it does not exist.
