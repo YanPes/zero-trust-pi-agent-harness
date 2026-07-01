@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMAGE="${PI_SECURE_IMAGE:-secure-pi:latest}"
 REBUILD="${PI_REBUILD:-0}"
-PI_AUTH_FILE="${PI_AUTH_FILE:-${HOME}/.secure-pi/auth.json}"
+PI_AUTH_FILE="${PI_AUTH_FILE:-${HOME}/.pi/agent/auth.json}"
 
 resolve_path() {
   if command -v realpath >/dev/null 2>&1; then
@@ -52,13 +52,16 @@ fi
 
 REPO_PATH="$(resolve_path "${REPO_PATH}")"
 
-AUTH_DIR="$(dirname "${PI_AUTH_FILE}")"
+HOST_PI_AUTH_FILE="${PI_AUTH_FILE:-${HOME}/.pi/agent/auth.json}"
+CONTAINER_PI_AUTH_FILE="/run/pi-auth.json"
+
+AUTH_DIR="$(dirname "${HOST_PI_AUTH_FILE}")"
 mkdir -p "${AUTH_DIR}"
-if [[ ! -f "${PI_AUTH_FILE}" ]]; then
-  printf '{}\n' >"${PI_AUTH_FILE}"
+if [[ ! -f "${HOST_PI_AUTH_FILE}" ]]; then
+  printf '{}\n' >"${HOST_PI_AUTH_FILE}"
 fi
-chmod 600 "${PI_AUTH_FILE}" 2>/dev/null || true
-PI_AUTH_FILE="$(resolve_path "${PI_AUTH_FILE}")"
+chmod 600 "${HOST_PI_AUTH_FILE}" 2>/dev/null || true
+HOST_PI_AUTH_FILE="$(resolve_path "${HOST_PI_AUTH_FILE}")"
 
 if [[ "${REBUILD}" == "1" ]] || ! docker image inspect "${IMAGE}" >/dev/null 2>&1; then
   echo "[secure-pi] Building image ${IMAGE} (PI_VERSION=${PI_VERSION})"
@@ -81,6 +84,7 @@ docker run --rm -it \
   --mount "${WORKSPACE_MOUNT}" \
   --read-only \
   --tmpfs /tmp:rw,noexec,nosuid,size=256m \
+  --tmpfs /run:rw,noexec,nosuid,uid=10001,gid=10001,mode=0700,size=4m \
   --tmpfs /home/pi/.pi:rw,nosuid,uid=10001,gid=10001,mode=0700,size=256m \
   --tmpfs /home/pi/.pi/agent:rw,nosuid,uid=10001,gid=10001,mode=0700,size=256m \
   --cap-drop ALL \
@@ -93,7 +97,8 @@ docker run --rm -it \
   -e PI_TELEMETRY=0 \
   -e PI_ALLOW_CONTEXT_FILES="${PI_ALLOW_CONTEXT_FILES:-1}" \
   -e PI_DISABLE_BASH_TOOL="${PI_DISABLE_BASH_TOOL:-0}" \
-  --mount "type=bind,src=${PI_AUTH_FILE},dst=/home/pi/.pi/agent/auth.json" \
+  -e PI_AUTH_FILE="${CONTAINER_PI_AUTH_FILE}" \
+  --mount "type=bind,src=${HOST_PI_AUTH_FILE},dst=${CONTAINER_PI_AUTH_FILE}" \
   "${DOCKER_NETWORK_ARGS[@]}" \
   "${IMAGE}" \
   "$@"

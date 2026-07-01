@@ -8,7 +8,6 @@ RUN apt-get update \
 
 RUN useradd --create-home --uid 10001 --shell /bin/bash pi \
     && mkdir -p /opt/pi /opt/pi-secure /workspace \
-    && touch /opt/pi-secure/auth.json \
     && chown -R pi:pi /opt/pi /opt/pi-secure /workspace /home/pi
 
 COPY config/settings.json /opt/pi-secure/settings.json
