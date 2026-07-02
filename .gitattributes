@@ -1,0 +1,4 @@
+* text=auto eol=lf
+
+# Shell scripts must stay LF for shebang compatibility in WSL/Linux
+*.sh text eol=lf
