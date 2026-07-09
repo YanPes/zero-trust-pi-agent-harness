@@ -66,15 +66,6 @@ fi
 
 REPO_PATH="$(resolve_path "${REPO_PATH}")"
 
-# Fix volume dir permissions for existing volumes initialized with wrong ownership.
-# Runs as root (no --user, no --cap-drop) before the hardened main container.
-# No-op if already correct. The Dockerfile sets 1777 for new volumes.
-docker run --rm \
-  --mount type=volume,src=secure-pi-agent,dst=/home/pi/.pi \
-  --entrypoint sh \
-  "${IMAGE}" \
-  -c 'chmod 1777 /home/pi/.pi /home/pi/.pi/agent 2>/dev/null || true'
-
 if [[ "${REBUILD}" == "1" ]] || ! docker image inspect "${IMAGE}" >/dev/null 2>&1; then
   BUILD_ARGS=()
   TARGETARCH="${PI_TARGETARCH:-$(detect_target_arch)}"
@@ -105,6 +96,15 @@ if [[ "${REBUILD}" == "1" ]] || ! docker image inspect "${IMAGE}" >/dev/null 2>&
   docker build "${BUILD_ARGS[@]}" -t "${IMAGE}" "${SCRIPT_DIR}"
 fi
 
+# Fix volume dir permissions for existing volumes initialized with wrong ownership.
+# Runs as root (no --user, no --cap-drop) before the hardened main container.
+# No-op if already correct. The Dockerfile sets 1777 for new volumes.
+docker run --rm \
+  --mount type=volume,src=secure-pi-agent,dst=/pi-agent \
+  --entrypoint sh \
+  "${IMAGE}" \
+  -c 'chmod 1777 /pi-agent 2>/dev/null || true'
+
 DOCKER_NETWORK_ARGS=()
 if [[ "${PI_DOCKER_NETWORK_NONE:-0}" == "1" ]]; then
   DOCKER_NETWORK_ARGS=(--network none)
@@ -125,7 +125,7 @@ docker run --rm -it \
   --read-only \
   --tmpfs /tmp:rw,noexec,nosuid,size=256m \
   --tmpfs /run:rw,noexec,nosuid,uid=0,gid=0,mode=0700,size=4m \
-  --mount type=volume,src=secure-pi-agent,dst=/home/pi/.pi \
+  --mount type=volume,src=secure-pi-agent,dst=/pi-agent \
   --cap-drop ALL \
   --security-opt no-new-privileges:true \
   --pids-limit "${PI_PIDS_LIMIT:-512}" \

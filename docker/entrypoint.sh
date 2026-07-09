@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PI_AGENT_DIR="${PI_CODING_AGENT_DIR:-${HOME}/.pi/agent}"
+PI_AGENT_DIR="${PI_CODING_AGENT_DIR:-/pi-agent}"
 PI_AUTH_JSON_BASE64="${PI_AUTH_JSON_BASE64:-}"
 
 # Volume dir is 1777 (set at image build). mkdir -p should always succeed.

@@ -208,7 +208,7 @@ These identities are used for different stages (build, startup, runtime). They a
 | UID:GID | Name / source | Where used | Why |
 | --- | --- | --- | --- |
 | `0:0` | `root` | Image build steps; optional runtime if you explicitly set `PI_CONTAINER_USER=0:0` | Needed for package install and system setup during image build. Runtime root is **not** the default. |
-| `10001:10001` | `pi` (user created in `Dockerfile`) | Owner of `/home/pi`, `/opt/pi`, and baked-in Pi install/seed data | Dedicated non-root service user inside the image. Good fixed UID option when you want deterministic container identity. |
+| `10001:10001` | `pi` (user created in `Dockerfile`) | Owner of `/opt/pi` and baked-in Pi install/seed data | Dedicated non-root service user inside the image. Good fixed UID option when you want deterministic container identity. |
 | `1000:1000` | Typical first Linux desktop user | `docker-compose.yml` fallback default: `user: "${PI_CONTAINER_USER:-1000:1000}"` | Sensible compose default on many Linux hosts, but can be overridden. |
 | `<host_uid>:<host_gid>` | Current host user | Default for `run-secure-pi.sh` (`id -u:id -g`) | Prevents permission mismatch when editing files in mounted `/workspace`. |
 
@@ -224,7 +224,7 @@ PI_CONTAINER_USER=0:0 ./run-secure-pi.sh /<path-to-repo>/
 
 ## Compose usage
 
-Pi state (including auth) is persisted automatically in Docker volume `secure-pi-agent`.
+Pi state (including auth) is persisted automatically in Docker volume `secure-pi-agent` (mounted at `/pi-agent`).
 
 Run:
 

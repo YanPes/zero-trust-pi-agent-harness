@@ -14,9 +14,9 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home --uid 10001 --shell /bin/bash pi \
-  && mkdir -p /opt/pi /opt/pi-secure /opt/pi-agent-seed /workspace /home/pi/.pi /home/pi/.pi/agent \
-  && chown -R pi:pi /opt/pi /opt/pi-secure /opt/pi-agent-seed /workspace /home/pi \
-  && chmod 1777 /home/pi/.pi /home/pi/.pi/agent
+  && mkdir -p /opt/pi /opt/pi-secure /opt/pi-agent-seed /workspace /pi-agent \
+  && chown -R pi:pi /opt/pi /opt/pi-secure /opt/pi-agent-seed /workspace /pi-agent \
+  && chmod 1777 /pi-agent
 
 COPY config/settings.json /opt/pi-secure/settings.json
 COPY docker/entrypoint.sh /usr/local/bin/pi-secure-entrypoint
@@ -27,8 +27,8 @@ RUN npm install --prefix /opt/pi "@earendil-works/pi-coding-agent@${PI_VERSION}"
 
 # Set PATH and env vars before any pi commands so the binary is resolvable
 ENV PATH="/opt/pi/node_modules/.bin:/opt/pi/bin:$PATH" \
-  HOME=/home/pi \
-  PI_CODING_AGENT_DIR=/home/pi/.pi/agent \
+  HOME=/tmp \
+  PI_CODING_AGENT_DIR=/pi-agent \
   PI_OFFLINE=1 \
   PI_SKIP_VERSION_CHECK=1 \
   PI_TELEMETRY=0
