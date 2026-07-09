@@ -1,6 +1,6 @@
 # zero-trust-pi-agent-harness
 
-Hardened Docker wrapper for `pi` (https://pi.dev/) suitable for zero-trust enterprise environments. `secure-pi` launches `pi` in a locked-down container with secure defaults, minimizing attack surface while maintaining core functionality for codebase and LLM interactions.
+Hardened Docker wrapper for `pi` (<https://pi.dev/>) suitable for zero-trust enterprise environments. `secure-pi` launches `pi` in a locked-down container with secure defaults, minimizing attack surface while maintaining core functionality for codebase and LLM interactions.
 
 ## What this setup enforces
 
@@ -41,9 +41,9 @@ Hardened Docker wrapper for `pi` (https://pi.dev/) suitable for zero-trust enter
 No local clone required. If this repo is published as a package, run the setup binary:
 
 ```bash
-npx zero-trust-pi-agent-harness
+npx github:yanpes/zero-trust-pi-agent-harness
 # or
-pnpx zero-trust-pi-agent-harness
+pnpx github:yanpes/zero-trust-pi-agent-harness
 ```
 
 The package also exposes a `secure-pi` bin name for direct invocation by package managers that prefer the bin name over the package name.
