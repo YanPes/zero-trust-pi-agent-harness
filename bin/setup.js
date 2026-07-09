@@ -44,7 +44,7 @@ function run() {
 
   const markerStart = '# >>> pi alias setup >>>';
   const markerEnd = '# <<< pi alias setup <<<';
-  const aliasLine = `alias pi=\"${scriptPath}\"`;
+  const aliasLine = `alias pi=\"${scriptPath}\" ./`;
   const block = `\n${markerStart}\n${aliasLine}\n${markerEnd}\n`;
 
   const current = fs.readFileSync(rcFile, 'utf8');
